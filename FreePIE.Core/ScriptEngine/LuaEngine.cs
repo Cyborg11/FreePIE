@@ -110,7 +110,7 @@ namespace FreePIE.Core.ScriptEngine
                         lua.DoString(script);
                     });
                         
-                    if (starting)
+                    if (starting && !error)
                     {
                         starting = false;
                         lua["starting"] = starting;
@@ -243,7 +243,12 @@ namespace FreePIE.Core.ScriptEngine
         private void StopLuaEngineAndWaitUntilStopped()
         {
             running = false;
-            stopSync.WaitOne();
+            var notHalted = stopSync.WaitOne(200);
+            if(!notHalted)
+            {
+                error = true;
+                lua.Close();
+            }
         }
 
         private void WaitForThreadedPluginsToStop()
